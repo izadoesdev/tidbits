@@ -4,8 +4,7 @@ export function generateEventData(count: number) {
     const data: any[] = [];
 
     const connectionTypes = [
-        'bluetooth', 'cellular', 'ethernet', 'none', 'wifi',
-        'wimax', 'other', 'unknown', 'slow-2g', '2g', '3g', '4g'
+        '4g', 'wifi', 'ethernet', 'slow-2g', '2g', '3g', 'unknown'
     ];
 
     for (let i = 0; i < count; i++) {

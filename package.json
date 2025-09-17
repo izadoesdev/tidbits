@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@faker-js/faker": "^10.0.0",
+    "arktype": "^2.1.22",
     "chalk": "^5.6.2",
     "mitata": "^1.0.34",
     "typebox": "^1.0.7",

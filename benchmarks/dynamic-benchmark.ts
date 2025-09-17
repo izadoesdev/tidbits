@@ -7,9 +7,11 @@ import {
     zodEventSchema,
     typeboxEventSchema,
     valibotEventSchema,
+    arktypeEventSchema,
     zodSimpleSchema,
     typeboxSimpleSchema,
     valibotSimpleSchema,
+    arktypeSimpleSchema,
     generateEventData,
     generateSimpleData,
 } from "./schemas/index";
@@ -60,6 +62,10 @@ async function main() {
         register(simpleData, "valibot", (data) => {
             do_not_optimize(v.parse(valibotSimpleSchema, data));
         });
+
+        register(simpleData, "arktype", (data) => {
+            do_not_optimize(arktypeSimpleSchema.assert(data));
+        });
     });
 
     await run();
@@ -84,6 +90,10 @@ async function main() {
 
         register(eventData, "valibot", (data) => {
             do_not_optimize(v.parse(valibotEventSchema, data));
+        });
+
+        register(eventData, "arktype", (data) => {
+            do_not_optimize(arktypeEventSchema.assert(data));
         });
     });
 

@@ -3,6 +3,7 @@ import Type, { type Static } from "typebox";
 import Value from "typebox/value";
 import { Compile } from "typebox/compile";
 import * as v from "valibot";
+import { type } from "arktype";
 import chalk from "chalk";
 import { faker } from "@faker-js/faker";
 
@@ -77,6 +78,11 @@ const simpleValibotSchema = v.object({
     age: v.number(),
 });
 
+const simpleArktypeSchema = type({
+    name: 'string',
+    age: 'number',
+});
+
 const complexValibotSchema = v.object({
     id: v.pipe(v.string(), v.uuid()),
     profile: v.object({
@@ -99,6 +105,30 @@ const complexValibotSchema = v.object({
     tags: v.pipe(v.array(v.string()), v.minLength(0), v.maxLength(10)),
     createdAt: v.string(),
     updatedAt: v.optional(v.string()),
+});
+
+const complexArktypeSchema = type({
+    id: 'string.uuid',
+    profile: {
+        firstName: '1 <= string <= 50',
+        lastName: '1 <= string <= 50',
+        email: 'string.email',
+        age: '0 <= number.integer <= 120',
+        isActive: 'boolean',
+    },
+    preferences: {
+        theme: "'light' | 'dark' | 'auto'",
+        notifications: {
+            email: 'boolean',
+            push: 'boolean',
+            sms: 'boolean',
+        },
+        language: 'string',
+    },
+    metadata: 'Record<string, unknown>',
+    tags: '0 <= string[] <= 10',
+    createdAt: 'string',
+    updatedAt: 'string',
 });
 
 function generateSimpleData(count: number) {
@@ -139,7 +169,6 @@ function generateComplexData(count: number) {
             },
             metadata: {
                 source: faker.helpers.arrayElement(["api", "web", "mobile", "import"]),
-                version: faker.system.semver(),
                 [`custom_${i}`]: faker.lorem.word(),
             },
             tags: Array.from({ length: faker.number.int({ min: 0, max: 10 }) }, () => faker.lorem.word()),
@@ -246,6 +275,10 @@ async function runBenchmarks() {
         simpleData.forEach(item => v.parse(simpleValibotSchema, item));
     }, CONFIG.iterations);
 
+    const arktypeSimpleTime = benchmark("ArkType (Simple)", () => {
+        simpleData.forEach(item => simpleArktypeSchema.assert(item));
+    }, CONFIG.iterations);
+
     console.log(chalk.bold.cyan("COMPLEX SCHEMA BENCHMARKS"));
     console.log(chalk.gray("─".repeat(30)));
 
@@ -265,6 +298,10 @@ async function runBenchmarks() {
         complexData.forEach(item => v.parse(complexValibotSchema, item));
     }, CONFIG.iterations);
 
+    const arktypeComplexTime = benchmark("ArkType (Complex)", () => {
+        complexData.forEach(item => complexArktypeSchema.assert(item));
+    }, CONFIG.iterations);
+
     console.log(chalk.bold.magenta("PERFORMANCE COMPARISON"));
     console.log(chalk.gray("─".repeat(25)));
 
@@ -272,12 +309,14 @@ async function runBenchmarks() {
     console.log(`  ${formatSpeedup(zodSimpleTime, typeboxSimpleTime, "TypeBox Value.Check")}`);
     console.log(`  ${formatSpeedup(zodSimpleTime, typeboxCompiledSimpleTime, "TypeBox Compiled")}`);
     console.log(`  ${formatSpeedup(zodSimpleTime, valibotSimpleTime, "Valibot")}`);
+    console.log(`  ${formatSpeedup(zodSimpleTime, arktypeSimpleTime, "ArkType")}`);
     console.log("");
 
     console.log(chalk.bold("Complex Schema:"));
     console.log(`  ${formatSpeedup(zodComplexTime, typeboxComplexTime, "TypeBox Value.Check")}`);
     console.log(`  ${formatSpeedup(zodComplexTime, typeboxCompiledComplexTime, "TypeBox Compiled")}`);
     console.log(`  ${formatSpeedup(zodComplexTime, valibotComplexTime, "Valibot")}`);
+    console.log(`  ${formatSpeedup(zodComplexTime, arktypeComplexTime, "ArkType")}`);
     console.log("");
 
     console.log(chalk.bold.magenta("THROUGHPUT COMPARISON"));
@@ -288,6 +327,7 @@ async function runBenchmarks() {
     console.log(`  ${chalk.blue('TypeBox Value.Check:')} ${formatThroughput(CONFIG.dataPoints, typeboxSimpleTime)}`);
     console.log(`  ${chalk.blue('TypeBox Compiled:')} ${formatThroughput(CONFIG.dataPoints, typeboxCompiledSimpleTime)}`);
     console.log(`  ${chalk.blue('Valibot:')} ${formatThroughput(CONFIG.dataPoints, valibotSimpleTime)}`);
+    console.log(`  ${chalk.blue('ArkType:')} ${formatThroughput(CONFIG.dataPoints, arktypeSimpleTime)}`);
     console.log("");
 
     console.log(chalk.bold("Complex Schema:"));
@@ -295,18 +335,21 @@ async function runBenchmarks() {
     console.log(`  ${chalk.blue('TypeBox Value.Check:')} ${formatThroughput(CONFIG.dataPoints, typeboxComplexTime)}`);
     console.log(`  ${chalk.blue('TypeBox Compiled:')} ${formatThroughput(CONFIG.dataPoints, typeboxCompiledComplexTime)}`);
     console.log(`  ${chalk.blue('Valibot:')} ${formatThroughput(CONFIG.dataPoints, valibotComplexTime)}`);
+    console.log(`  ${chalk.blue('ArkType:')} ${formatThroughput(CONFIG.dataPoints, arktypeComplexTime)}`);
 
-    const fastestSimple = Math.min(zodSimpleTime, typeboxSimpleTime, typeboxCompiledSimpleTime, valibotSimpleTime);
-    const fastestComplex = Math.min(zodComplexTime, typeboxComplexTime, typeboxCompiledComplexTime, valibotComplexTime);
+    const fastestSimple = Math.min(zodSimpleTime, typeboxSimpleTime, typeboxCompiledSimpleTime, valibotSimpleTime, arktypeSimpleTime);
+    const fastestComplex = Math.min(zodComplexTime, typeboxComplexTime, typeboxCompiledComplexTime, valibotComplexTime, arktypeComplexTime);
 
     let simpleWinner = "Zod";
     let complexWinner = "Zod";
 
-    if (valibotSimpleTime === fastestSimple) simpleWinner = "Valibot";
+    if (arktypeSimpleTime === fastestSimple) simpleWinner = "ArkType";
+    else if (valibotSimpleTime === fastestSimple) simpleWinner = "Valibot";
     else if (typeboxCompiledSimpleTime === fastestSimple) simpleWinner = "TypeBox Compiled";
     else if (typeboxSimpleTime === fastestSimple) simpleWinner = "TypeBox Value.Check";
 
-    if (valibotComplexTime === fastestComplex) complexWinner = "Valibot";
+    if (arktypeComplexTime === fastestComplex) complexWinner = "ArkType";
+    else if (valibotComplexTime === fastestComplex) complexWinner = "Valibot";
     else if (typeboxCompiledComplexTime === fastestComplex) complexWinner = "TypeBox Compiled";
     else if (typeboxComplexTime === fastestComplex) complexWinner = "TypeBox Value.Check";
 
@@ -333,7 +376,8 @@ async function runBenchmarks() {
         { name: "Zod", time: zodSimpleTime },
         { name: "TypeBox Value.Check", time: typeboxSimpleTime },
         { name: "TypeBox Compiled", time: typeboxCompiledSimpleTime },
-        { name: "Valibot", time: valibotSimpleTime }
+        { name: "Valibot", time: valibotSimpleTime },
+        { name: "ArkType", time: arktypeSimpleTime }
     ]);
 
     console.log("");
@@ -342,7 +386,8 @@ async function runBenchmarks() {
         { name: "Zod", time: zodComplexTime },
         { name: "TypeBox Value.Check", time: typeboxComplexTime },
         { name: "TypeBox Compiled", time: typeboxCompiledComplexTime },
-        { name: "Valibot", time: valibotComplexTime }
+        { name: "Valibot", time: valibotComplexTime },
+        { name: "ArkType", time: arktypeComplexTime }
     ]);
 
     console.log(chalk.gray("═".repeat(60)));

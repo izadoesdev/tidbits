@@ -2,11 +2,13 @@
 export { analyticsEventSchema as zodEventSchema } from './zod/event-schema';
 export { analyticsEventSchema as typeboxEventSchema } from './typebox/event-schema';
 export { analyticsEventSchema as valibotEventSchema } from './valibot/event-schema';
+export { analyticsEventSchema as arktypeEventSchema } from './arktype/event-schema';
 
 // Simple schemas for comparison
 import z from 'zod';
 import Type from 'typebox';
 import * as v from 'valibot';
+import { type } from 'arktype';
 
 export const zodSimpleSchema = z.object({
     name: z.string(),
@@ -21,6 +23,11 @@ export const typeboxSimpleSchema = Type.Object({
 export const valibotSimpleSchema = v.object({
     name: v.string(),
     age: v.number(),
+});
+
+export const arktypeSimpleSchema = type({
+    name: 'string',
+    age: 'number',
 });
 
 export { generateEventData } from '../data/event-data';
