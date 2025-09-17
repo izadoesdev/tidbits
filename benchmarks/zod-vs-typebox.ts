@@ -6,9 +6,8 @@ import * as v from "valibot";
 import chalk from "chalk";
 import { faker } from "@faker-js/faker";
 
-// Configuration
 const CONFIG = {
-    dataPoints: 500000,
+    dataPoints: 50000,
     iterations: 3,
 };
 
@@ -310,6 +309,41 @@ async function runBenchmarks() {
     if (valibotComplexTime === fastestComplex) complexWinner = "Valibot";
     else if (typeboxCompiledComplexTime === fastestComplex) complexWinner = "TypeBox Compiled";
     else if (typeboxComplexTime === fastestComplex) complexWinner = "TypeBox Value.Check";
+
+    console.log(chalk.bold.magenta("🏁 PERFORMANCE SUMMARY"));
+    console.log(chalk.gray("─".repeat(22)));
+
+    const generateSummary = (title: string, results: Array<{ name: string, time: number }>) => {
+        console.log(chalk.bold(`${title}:`));
+
+        const validResults = results.filter(r => r.time !== Infinity);
+        const sortedResults = validResults.sort((a, b) => a.time - b.time);
+        const fastest = sortedResults[0];
+
+        console.log(chalk.green(`  🏆 ${fastest.name} (fastest)`));
+
+        for (let i = 1; i < sortedResults.length; i++) {
+            const result = sortedResults[i];
+            const speedup = (fastest.time / result.time).toFixed(2);
+            console.log(chalk.gray(`     ${speedup}x slower than ${result.name}`));
+        }
+    };
+
+    generateSummary("Simple Schema", [
+        { name: "Zod", time: zodSimpleTime },
+        { name: "TypeBox Value.Check", time: typeboxSimpleTime },
+        { name: "TypeBox Compiled", time: typeboxCompiledSimpleTime },
+        { name: "Valibot", time: valibotSimpleTime }
+    ]);
+
+    console.log("");
+
+    generateSummary("Complex Schema", [
+        { name: "Zod", time: zodComplexTime },
+        { name: "TypeBox Value.Check", time: typeboxComplexTime },
+        { name: "TypeBox Compiled", time: typeboxCompiledComplexTime },
+        { name: "Valibot", time: valibotComplexTime }
+    ]);
 
     console.log(chalk.gray("═".repeat(60)));
     console.log(chalk.bold.green("WINNERS:"));
