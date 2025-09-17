@@ -1,5 +1,5 @@
 import { z } from "zod";
-import Type, { type Static } from "typebox";
+import Type from "typebox";
 import Value from "typebox/value";
 import { Compile } from "typebox/compile";
 import * as v from "valibot";
@@ -7,7 +7,6 @@ import chalk from "chalk";
 import { faker } from "@faker-js/faker";
 import { bench, run, summary, do_not_optimize } from "mitata";
 
-// Configuration
 const CONFIG = {
     dataPoints: 10000,
 };
@@ -151,7 +150,6 @@ function generateComplexData(count: number) {
     return data;
 }
 
-// Generate test data once for all benchmarks
 const simpleData = generateSimpleData(CONFIG.dataPoints);
 const complexData = generateComplexData(CONFIG.dataPoints);
 
@@ -169,7 +167,6 @@ const register = (data: any[], name: string, fn: (data: any) => any) => {
     }).gc('inner');
 };
 
-// Simple Schema Benchmarks
 console.log(chalk.bold.magenta("🚀 SIMPLE SCHEMA VALIDATION BENCHMARK"));
 console.log(chalk.cyan("Configuration:"));
 console.log(`  ${chalk.gray('Data points:')} ${chalk.white.bold(CONFIG.dataPoints.toLocaleString())}`);
@@ -198,7 +195,6 @@ await run();
 
 console.log("\n" + chalk.gray("═".repeat(80)) + "\n");
 
-// Complex Schema Benchmarks
 console.log(chalk.bold.magenta("🚀 COMPLEX SCHEMA VALIDATION BENCHMARK"));
 console.log(chalk.cyan("Configuration:"));
 console.log(`  ${chalk.gray('Data points:')} ${chalk.white.bold(CONFIG.dataPoints.toLocaleString())}`);
