@@ -8,6 +8,8 @@
     "zod": "^4.1.8"
   },
   "scripts": {
-    "benchmark:schema": "bun benchmarks/zod-vs-typebox.ts"
+    "benchmark:schema": "bun benchmarks/zod-vs-typebox.ts",
+    "benchmark:dynamic": "bun benchmarks/dynamic-benchmark.ts",
+    "benchmark:mitata": "bun benchmarks/zod-vs-typebox-mitata.ts"
   }
 }
