@@ -5,7 +5,7 @@ import { Compile } from "typebox/compile";
 import * as v from "valibot";
 import chalk from "chalk";
 import { faker } from "@faker-js/faker";
-import { bench, run, summary } from "mitata";
+import { bench, run, summary, do_not_optimize } from "mitata";
 
 // Configuration
 const CONFIG = {
@@ -155,6 +155,20 @@ function generateComplexData(count: number) {
 const simpleData = generateSimpleData(CONFIG.dataPoints);
 const complexData = generateComplexData(CONFIG.dataPoints);
 
+const register = (data: any[], name: string, fn: (data: any) => any) => {
+    bench(name, function* () {
+        let i = -1;
+
+        yield {
+            [0]: () => {
+                i = (i + 1) % data.length;
+                return data[i];
+            },
+            bench: fn,
+        };
+    }).gc('inner');
+};
+
 // Simple Schema Benchmarks
 console.log(chalk.bold.magenta("🚀 SIMPLE SCHEMA VALIDATION BENCHMARK"));
 console.log(chalk.cyan("Configuration:"));
@@ -163,20 +177,20 @@ console.log(`  ${chalk.gray('Schema:')} ${chalk.white('name (string) + age (numb
 console.log(chalk.gray("─".repeat(60)) + "\n");
 
 summary(() => {
-    bench("Zod (Simple)", () => {
-        simpleZodSchema.parse(simpleData[Math.floor(Math.random() * simpleData.length)]);
+    register(simpleData, "zod (simple)", (data) => {
+        do_not_optimize(simpleZodSchema.parse(data));
     });
 
-    bench("TypeBox Value.Check (Simple)", () => {
-        Value.Check(simpleTypeboxSchema, simpleData[Math.floor(Math.random() * simpleData.length)]);
+    register(simpleData, "typeBox Value.Check (simple)", (data) => {
+        do_not_optimize(Value.Check(simpleTypeboxSchema, data));
     });
 
-    bench("TypeBox Compiled (Simple)", () => {
-        compiledSimpleTypeboxSchema.Check(simpleData[Math.floor(Math.random() * simpleData.length)]);
+    register(simpleData, "typebox compiled (simple)", (data) => {
+        do_not_optimize(compiledSimpleTypeboxSchema.Check(data));
     });
 
-    bench("Valibot (Simple)", () => {
-        v.parse(simpleValibotSchema, simpleData[Math.floor(Math.random() * simpleData.length)]);
+    register(simpleData, "Valibot (simple)", (data) => {
+        do_not_optimize(v.parse(simpleValibotSchema, data));
     });
 });
 
@@ -192,20 +206,20 @@ console.log(`  ${chalk.gray('Schema:')} ${chalk.white('user profile + preference
 console.log(chalk.gray("─".repeat(60)) + "\n");
 
 summary(() => {
-    bench("Zod (Complex)", () => {
-        complexZodSchema.parse(complexData[Math.floor(Math.random() * complexData.length)]);
+    register(complexData, "zod (complex)", (data) => {
+        do_not_optimize(complexZodSchema.parse(data));
     });
 
-    bench("TypeBox Value.Check (Complex)", () => {
-        Value.Check(complexTypeboxSchema, complexData[Math.floor(Math.random() * complexData.length)]);
+    register(complexData, "typebox Value.Check (complex)", (data) => {
+        do_not_optimize(Value.Check(complexTypeboxSchema, data));
     });
 
-    bench("TypeBox Compiled (Complex)", () => {
-        compiledComplexTypeboxSchema.Check(complexData[Math.floor(Math.random() * complexData.length)]);
+    register(complexData, "typebox compiled (complex)", (data) => {
+        do_not_optimize(compiledComplexTypeboxSchema.Check(data));
     });
 
-    bench("Valibot (Complex)", () => {
-        v.parse(complexValibotSchema, complexData[Math.floor(Math.random() * complexData.length)]);
+    register(complexData, "valibot (complex)", (data) => {
+        do_not_optimize(v.parse(complexValibotSchema, data));
     });
 });
 
