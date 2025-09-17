@@ -5,6 +5,7 @@
       "dependencies": {
         "@faker-js/faker": "^10.0.0",
         "chalk": "^5.6.2",
+        "mitata": "^1.0.34",
         "typebox": "^1.0.7",
         "valibot": "^1.1.0",
         "zod": "^4.1.8",
@@ -15,6 +16,8 @@
     "@faker-js/faker": ["@faker-js/faker@10.0.0", "", {}, "sha512-UollFEUkVXutsaP+Vndjxar40Gs5JL2HeLcl8xO1QAjJgOdhc3OmBFWyEylS+RddWaaBiAzH+5/17PLQJwDiLw=="],
 
     "chalk": ["chalk@5.6.2", "", {}, "sha512-7NzBL0rN6fMUW+f7A6Io4h40qQlG+xGmtMxfbnH/K7TAtt8JQWVQK+6g0UXKMeVJoyV5EkkNsErQ8pVD3bLHbA=="],
+
+    "mitata": ["mitata@1.0.34", "", {}, "sha512-Mc3zrtNBKIMeHSCQ0XqRLo1vbdIx1wvFV9c8NJAiyho6AjNfMY8bVhbS12bwciUdd1t4rj8099CH3N3NFahaUA=="],
 
     "typebox": ["typebox@1.0.7", "", {}, "sha512-25YRpYAzWPLaY1C05W6XUHLAWosfg7NBpYf37yvhbGMZ8pyulce5DviT6fTU+1HlG9lGII/W+MZYveBI9udRog=="],
 
